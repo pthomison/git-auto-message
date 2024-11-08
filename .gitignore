@@ -1,0 +1,6 @@
+openwebui-data/
+test/
+build/
+.DS_Store
+.webui_secret_key# Added by goreleaser init:
+dist/

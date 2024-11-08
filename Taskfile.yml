@@ -1,0 +1,38 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  LOCAL_BUILD_EXECUTABLE: "./dist/git-auto-message_darwin_arm64_v8.0/git-auto-message"
+
+tasks:
+  openwebui:
+    env:
+      WEBUI_AUTH: false
+      DATA_DIR: ./openwebui-data
+    cmds:
+      - uv run --with "open-webui" -p 3.11 open-webui serve
+    silent: true
+
+  build:
+    cmds:
+      - ./scripts/build.sh
+
+  release:
+    cmds:
+      - GITHUB_TOKEN="$(gh auth token)" goreleaser release --clean
+
+  build-model:
+    cmds:
+      - task: build
+      - "{{.LOCAL_BUILD_EXECUTABLE}} load-model {{.CLI_ARGS}}"
+
+  create-commit-message:
+    cmds:
+      - task: build
+      - "{{.LOCAL_BUILD_EXECUTABLE}} generate-commit-message -v"
+
+  commit:
+    cmds:
+      - task: build
+      - git commit -m "$({{.LOCAL_BUILD_EXECUTABLE}} generate-commit-message -b)"
